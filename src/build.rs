@@ -79,161 +79,161 @@ pub fn wasm_check(module: &mut Module) -> Result<()> {
         }
     }
 
-    deny_floating_point(&module)?;
-
-    check_import_section(&module)?;
-
-    check_limits(module)?;
+//    deny_floating_point(&module)?;
+//
+//    check_import_section(&module)?;
+//
+//    check_limits(module)?;
     Ok(())
 }
 
-const SIGNATURES: [(&str, &[ValueType], Option<ValueType>); 25] = [
-    ("ontio_timestamp", &[], Some(ValueType::I64)),
-    ("ontio_block_height", &[], Some(ValueType::I32)),
-    ("ontio_input_length", &[], Some(ValueType::I32)),
-    ("ontio_call_output_length", &[], Some(ValueType::I32)),
-    ("ontio_get_input", &[ValueType::I32], None),
-    ("ontio_get_call_output", &[ValueType::I32], None),
-    ("ontio_self_address", &[ValueType::I32], None),
-    ("ontio_gas_info", &[ValueType::I32], None),
-    ("ontio_caller_address", &[ValueType::I32], None),
-    ("ontio_entry_address", &[ValueType::I32], None),
-    ("ontio_check_witness", &[ValueType::I32], Some(ValueType::I32)),
-    ("ontio_current_blockhash", &[ValueType::I32], Some(ValueType::I32)),
-    ("ontio_current_txhash", &[ValueType::I32], Some(ValueType::I32)),
-    ("ontio_return", &[ValueType::I32; 2], None),
-    ("ontio_panic", &[ValueType::I32; 2], None),
-    ("ontio_notify", &[ValueType::I32; 2], None),
-    ("ontio_call_contract", &[ValueType::I32; 3], Some(ValueType::I32)),
-    ("ontio_contract_create", &[ValueType::I32; 14], Some(ValueType::I32)),
-    ("ontio_contract_migrate", &[ValueType::I32; 14], Some(ValueType::I32)),
-    ("ontio_contract_destroy", &[], None),
-    ("ontio_storage_read", &[ValueType::I32; 5], Some(ValueType::I32)),
-    ("ontio_storage_write", &[ValueType::I32; 4], None),
-    ("ontio_storage_delete", &[ValueType::I32; 2], None),
-    ("ontio_debug", &[ValueType::I32; 2], None),
-    ("ontio_sha256", &[ValueType::I32; 3], None),
-];
+//const SIGNATURES: [(&str, &[ValueType], Option<ValueType>); 25] = [
+//    ("ontio_timestamp", &[], Some(ValueType::I64)),
+//    ("ontio_block_height", &[], Some(ValueType::I32)),
+//    ("ontio_input_length", &[], Some(ValueType::I32)),
+//    ("ontio_call_output_length", &[], Some(ValueType::I32)),
+//    ("ontio_get_input", &[ValueType::I32], None),
+//    ("ontio_get_call_output", &[ValueType::I32], None),
+//    ("ontio_self_address", &[ValueType::I32], None),
+//    ("ontio_gas_info", &[ValueType::I32], None),
+//    ("ontio_caller_address", &[ValueType::I32], None),
+//    ("ontio_entry_address", &[ValueType::I32], None),
+//    ("ontio_check_witness", &[ValueType::I32], Some(ValueType::I32)),
+//    ("ontio_current_blockhash", &[ValueType::I32], Some(ValueType::I32)),
+//    ("ontio_current_txhash", &[ValueType::I32], Some(ValueType::I32)),
+//    ("ontio_return", &[ValueType::I32; 2], None),
+//    ("ontio_panic", &[ValueType::I32; 2], None),
+//    ("ontio_notify", &[ValueType::I32; 2], None),
+//    ("ontio_call_contract", &[ValueType::I32; 3], Some(ValueType::I32)),
+//    ("ontio_contract_create", &[ValueType::I32; 14], Some(ValueType::I32)),
+//    ("ontio_contract_migrate", &[ValueType::I32; 14], Some(ValueType::I32)),
+//    ("ontio_contract_destroy", &[], None),
+//    ("ontio_storage_read", &[ValueType::I32; 5], Some(ValueType::I32)),
+//    ("ontio_storage_write", &[ValueType::I32; 4], None),
+//    ("ontio_storage_delete", &[ValueType::I32; 2], None),
+//    ("ontio_debug", &[ValueType::I32; 2], None),
+//    ("ontio_sha256", &[ValueType::I32; 3], None),
+//];
 
-fn check_import_section(module: &Module) -> Result<()> {
-    if let Some(import_section) = module.import_section() {
-        for import_entry in import_section.entries() {
-            if import_entry.module() != "env" {
-                return Err(anyhow!("import module should be env, got: {}", import_entry.module()));
-            }
+//fn check_import_section(module: &Module) -> Result<()> {
+//    if let Some(import_section) = module.import_section() {
+//        for import_entry in import_section.entries() {
+//            if import_entry.module() != "env" {
+//                return Err(anyhow!("import module should be env, got: {}", import_entry.module()));
+//            }
+//
+//            match import_entry.external() {
+//                External::Function(index) => {
+//                    let func_type = &module.type_section().unwrap().types()[*index as usize];
+//                    match func_type {
+//                        Type::Function(func_type) => {
+//                            check_signature(import_entry.field(), func_type)?;
+//                        }
+//                    }
+//                }
+//                _ => bail!("only function can be imported from ontology runtime"),
+//            };
+//        }
+//    }
+//    return Ok(());
+//}
 
-            match import_entry.external() {
-                External::Function(index) => {
-                    let func_type = &module.type_section().unwrap().types()[*index as usize];
-                    match func_type {
-                        Type::Function(func_type) => {
-                            check_signature(import_entry.field(), func_type)?;
-                        }
-                    }
-                }
-                _ => bail!("only function can be imported from ontology runtime"),
-            };
-        }
-    }
-    return Ok(());
-}
+//fn check_signature(func: &str, func_type: &FunctionType) -> Result<()> {
+//    match SIGNATURES.iter().find(|e| e.0 == func) {
+//        None => return Err(anyhow!("can not find signature for func: {}", func)),
+//        Some(sig) => {
+//            if sig.2 != func_type.return_type()
+//                || sig.1.len() != func_type.params().len()
+//                || sig.1.iter().zip(func_type.params()).any(|(a, b)| a != b)
+//            {
+//                return Err(anyhow!(
+//                    "signature mismatch for func: {}, expect:{:?}, got: {:?}",
+//                    func,
+//                    sig.1,
+//                    func_type.params()
+//                ));
+//            }
+//        }
+//    }
+//
+//    Ok(())
+//}
 
-fn check_signature(func: &str, func_type: &FunctionType) -> Result<()> {
-    match SIGNATURES.iter().find(|e| e.0 == func) {
-        None => return Err(anyhow!("can not find signature for func: {}", func)),
-        Some(sig) => {
-            if sig.2 != func_type.return_type()
-                || sig.1.len() != func_type.params().len()
-                || sig.1.iter().zip(func_type.params()).any(|(a, b)| a != b)
-            {
-                return Err(anyhow!(
-                    "signature mismatch for func: {}, expect:{:?}, got: {:?}",
-                    func,
-                    sig.1,
-                    func_type.params()
-                ));
-            }
-        }
-    }
+//fn is_float_inst(inst: &Instruction) -> bool {
+//    let inst = format!("{}", inst);
+//    return inst.contains("f32") || inst.contains("f64");
+//}
 
-    Ok(())
-}
+//fn is_float_type(value_type: &ValueType) -> bool {
+//    match value_type {
+//        ValueType::I32 | ValueType::I64 => return false,
+//        _ => return false,
+//    }
+//}
 
-fn is_float_inst(inst: &Instruction) -> bool {
-    let inst = format!("{}", inst);
-    return inst.contains("f32") || inst.contains("f64");
-}
+//fn is_float_init_expr(init_expr: &InitExpr) -> bool {
+//    for expr in init_expr.code() {
+//        if is_float_inst(&expr) {
+//            return true;
+//        }
+//    }
+//
+//    false
+//}
 
-fn is_float_type(value_type: &ValueType) -> bool {
-    match value_type {
-        ValueType::I32 | ValueType::I64 => return false,
-        _ => return false,
-    }
-}
-
-fn is_float_init_expr(init_expr: &InitExpr) -> bool {
-    for expr in init_expr.code() {
-        if is_float_inst(&expr) {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn deny_floating_point(module: &Module) -> Result<()> {
-    if let Some(code) = module.code_section() {
-        let bodies: &[FuncBody] = code.bodies();
-        for body in bodies {
-            let locals = body.locals();
-            for local in locals {
-                if is_float_type(&local.value_type()) {
-                    bail!("function local variable contains floating type");
-                }
-            }
-        }
-    }
-
-    if let Some(global_section) = module.global_section() {
-        let entries = global_section.entries();
-        for entry in entries {
-            if is_float_type(&entry.global_type().content_type()) {
-                return Err(anyhow!(
-                    "global type content type is invalid: {}",
-                    &entry.global_type().content_type()
-                ));
-            }
-            if is_float_init_expr(entry.init_expr()) {
-                bail!("global init expr contains floating type");
-            }
-        }
-    }
-
-    if let Some(data_section) = module.data_section() {
-        for data_segment in data_section.entries() {
-            if let Some(init_expr) = data_segment.offset() {
-                if is_float_init_expr(init_expr) {
-                    bail!("init expr in data section contains floating type");
-                }
-            }
-        }
-    }
-    if let Some(elements_section) = module.elements_section() {
-        for entry in elements_section.entries() {
-            if let Some(init_expr) = entry.offset() {
-                if is_float_init_expr(init_expr) {
-                    bail!("init expr in element section contains floating type");
-                }
-            }
-        }
-    }
-
-    // type section and function code is checked in wasmi
-    let wasmi_module = wasmi::Module::from_parity_wasm_module(module.clone())?;
-    wasmi_module.deny_floating_point()?;
-
-    Ok(())
-}
+//fn deny_floating_point(module: &Module) -> Result<()> {
+//    if let Some(code) = module.code_section() {
+//        let bodies: &[FuncBody] = code.bodies();
+//        for body in bodies {
+//            let locals = body.locals();
+//            for local in locals {
+//                if is_float_type(&local.value_type()) {
+//                    bail!("function local variable contains floating type");
+//                }
+//            }
+//        }
+//    }
+//
+//    if let Some(global_section) = module.global_section() {
+//        let entries = global_section.entries();
+//        for entry in entries {
+//            if is_float_type(&entry.global_type().content_type()) {
+//                return Err(anyhow!(
+//                    "global type content type is invalid: {}",
+//                    &entry.global_type().content_type()
+//                ));
+//            }
+//            if is_float_init_expr(entry.init_expr()) {
+//                bail!("global init expr contains floating type");
+//            }
+//        }
+//    }
+//
+//    if let Some(data_section) = module.data_section() {
+//        for data_segment in data_section.entries() {
+//            if let Some(init_expr) = data_segment.offset() {
+//                if is_float_init_expr(init_expr) {
+//                    bail!("init expr in data section contains floating type");
+//                }
+//            }
+//        }
+//    }
+//    if let Some(elements_section) = module.elements_section() {
+//        for entry in elements_section.entries() {
+//            if let Some(init_expr) = entry.offset() {
+//                if is_float_init_expr(init_expr) {
+//                    bail!("init expr in element section contains floating type");
+//                }
+//            }
+//        }
+//    }
+//
+//    // type section and function code is checked in wasmi
+//    let wasmi_module = wasmi::Module::from_parity_wasm_module(module.clone())?;
+//    wasmi_module.deny_floating_point()?;
+//
+//    Ok(())
+//}
 
 fn clean_zeros_in_data_section(module: &mut Module) {
     match module.data_section_mut() {
