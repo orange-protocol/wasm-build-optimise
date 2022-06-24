@@ -1,5 +1,6 @@
 # wasm-build-optimise
 wasm-build-optimise
+To optimise compiled .wasm file
 
 ## Build
 ```
